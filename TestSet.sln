@@ -5,6 +5,15 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnLoadAssembly", "UnLoadAssembly\UnLoadAssembly.csproj", "{E1A9D824-1668-4432-91DD-A069C707D0D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServer", "TcpDemo\TcpServer.csproj", "{CC3E83EF-7ED8-4854-A93A-3636574C492D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTcpClient", "TcpClient\MyTcpClient.csproj", "{B5299FF4-B148-4F05-853B-0EB6CB645915}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{4B22EE9B-3748-4DE4-B5FC-BDF153DB8F2E}"
+	ProjectSection(SolutionItems) = preProject
+		History.md = History.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +24,14 @@ Global
 		{E1A9D824-1668-4432-91DD-A069C707D0D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1A9D824-1668-4432-91DD-A069C707D0D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1A9D824-1668-4432-91DD-A069C707D0D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC3E83EF-7ED8-4854-A93A-3636574C492D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC3E83EF-7ED8-4854-A93A-3636574C492D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC3E83EF-7ED8-4854-A93A-3636574C492D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC3E83EF-7ED8-4854-A93A-3636574C492D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5299FF4-B148-4F05-853B-0EB6CB645915}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5299FF4-B148-4F05-853B-0EB6CB645915}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5299FF4-B148-4F05-853B-0EB6CB645915}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5299FF4-B148-4F05-853B-0EB6CB645915}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
