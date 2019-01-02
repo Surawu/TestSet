@@ -11,7 +11,7 @@ namespace NETMQClient
         static void Main(string[] args)
         {
             Console.WriteLine("Enter NETMQClient");
-            Client_NOBLOCK();
+            ParallelTask();
         }
     }
 }

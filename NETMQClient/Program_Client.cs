@@ -45,7 +45,7 @@ namespace NETMQClient
                 {
                     // .Subscribe("hello1")will WriteLine hello1 and hello2, but if you Subscribe("hello2")
                     // will not WriteLine any message
-                    requester.SubscribeAll();
+                    requester.SubscribeAll(); // this is very important
 
                     requester.Connect("tcp://127.0.0.1:5555");
                     requester.Connect("tcp://127.0.0.1:5554");
@@ -94,6 +94,24 @@ namespace NETMQClient
                     {
                         Console.WriteLine(item.ReadString());
                     }
+                    foreach (var item in receiver.ReceiveMessage())
+                    {
+                        Console.WriteLine(item.ReadString());
+                    }
+                }
+            }
+        }
+
+
+        internal static void ParallelTask()
+        {
+            using (var context = new ZContext())
+            using (var receiver = new ZSocket(context, ZSocketType.PULL))
+            {
+                receiver.Bind("tcp://127.0.0.1:5555");
+
+                while (true)
+                {
                     foreach (var item in receiver.ReceiveMessage())
                     {
                         Console.WriteLine(item.ReadString());

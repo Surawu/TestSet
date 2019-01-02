@@ -10,7 +10,14 @@ namespace NETMQWorker
 {
     public static partial class Program
     {
-        public static void Worker_Pull_Push()
+        /// <summary>
+        /// 任务执行器
+        /// 连接PULL套接字至tcp://localhost:5554端点
+        /// 从任务分发器处获取任务
+        /// 连接PUSH套接字至tcp://localhost:5555端点
+        /// 向结果采集器发送结果
+        /// </summary>
+        public static void ParallelTask()
         {
             using (var context = new ZContext())
             using (ZSocket receiver = new ZSocket(context, ZSocketType.PULL),

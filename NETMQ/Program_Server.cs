@@ -54,14 +54,14 @@ namespace NETMQServer
             }
         }
 
-        internal static void Server_Push(string port)
+        internal static void ParallelTask(string port)
         {
             Console.WriteLine("Server started");
             using (var context = new ZContext())
             {
-                using (var responder = new ZSocket(context, ZSocketType.PUB))
+                using (var vent = new ZSocket(context, ZSocketType.PUSH))
                 {
-                    responder.Bind("tcp://127.0.0.1:" + port);
+                    vent.Bind("tcp://127.0.0.1:" + port);
                     var str = "hello " + port;
                     var msg = new ZMessage()
                     {
@@ -70,7 +70,7 @@ namespace NETMQServer
                     Console.WriteLine("Send message " + str);
                     while (true)
                     {
-                        responder.Send(msg);
+                        vent.Send(msg);
                         Thread.Sleep(50);
                     }
                 }

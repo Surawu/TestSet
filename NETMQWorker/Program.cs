@@ -11,7 +11,7 @@ namespace NETMQWorker
         static void Main(string[] args)
         {
             Console.WriteLine("Enter NETMQWorker");
-            Worker_Pull_Push();
+            ParallelTask();
         }
     }
 }

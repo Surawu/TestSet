@@ -11,7 +11,7 @@ namespace NETMQServer
         static void Main(string[] args)
         {
             Console.WriteLine("please enter port...");
-            Server_Push(Console.ReadLine());
+            ParallelTask(Console.ReadLine());
         }
     }
 }
