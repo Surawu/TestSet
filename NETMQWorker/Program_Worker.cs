@@ -10,35 +10,38 @@ namespace NETMQWorker
 {
     public static partial class Program
     {
-        /// <summary>
-        /// 任务执行器
-        /// 连接PULL套接字至tcp://localhost:5554端点
-        /// 从任务分发器处获取任务
-        /// 连接PUSH套接字至tcp://localhost:5555端点
-        /// 向结果采集器发送结果
-        /// </summary>
-        public static void ParallelTask()
+        public static void TaskWork()
         {
-            using (var context = new ZContext())
-            using (ZSocket receiver = new ZSocket(context, ZSocketType.PULL),
-                sender = new ZSocket(context, ZSocketType.PUSH))
-            {
-                receiver.Connect("tcp://127.0.0.1:5554");
-                sender.Connect("tcp://127.0.0.1:5555");
+            //
+            // Task worker
+            // Connects PULL socket to tcp://127.0.0.1:5557
+            // Collects workloads from ventilator via that socket
+            // Connects PUSH socket to tcp://127.0.0.1:5558
+            // Sends results to sink via that socket
+            //
+            // Author: metadings
+            //
 
+            // Socket to receive messages on and
+            // Socket to send messages to
+            using (var context = new ZContext())
+            using (var receiver = new ZSocket(context, ZSocketType.PULL))
+            using (var sink = new ZSocket(context, ZSocketType.PUSH))
+            {
+                receiver.Connect("tcp://127.0.0.1:5557");
+                sink.Connect("tcp://127.0.0.1:5558");
+
+                // Process tasks forever
                 while (true)
                 {
-                    foreach (var item in receiver.ReceiveMessage())
-                    {
-                        Console.WriteLine(item.ReadString());
-                    }
+                    var replyBytes = new byte[4];
+                    receiver.ReceiveBytes(replyBytes, 0, replyBytes.Length);
+                    int workload = BitConverter.ToInt32(replyBytes, 0);
+                    Console.WriteLine("{0}.", workload);    // Show progress
 
-                    var msg = new ZMessage()
-                    {
-                        new ZFrame("worker "+DateTime.Now.ToShortTimeString()),
-                    };
-                    sender.Send(msg);
-                    Thread.Sleep(50);
+                    Thread.Sleep(workload); // Do the work
+
+                    sink.Send(new byte[0], 0, 0);   // Send results to sink
                 }
             }
         }

@@ -10,8 +10,9 @@ namespace NETMQClient
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Enter NETMQClient");
-            ParallelTask();
+            Console.WriteLine("Enter in NETMQClient");
+            TaskSink();
+            Console.ReadLine();
         }
     }
 }

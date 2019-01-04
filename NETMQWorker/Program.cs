@@ -10,8 +10,9 @@ namespace NETMQWorker
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Enter NETMQWorker");
-            ParallelTask();
+            Console.WriteLine("Enter in NETMQWorker");
+            TaskWork();
+            Console.ReadLine();
         }
     }
 }
