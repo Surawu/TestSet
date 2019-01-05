@@ -45,5 +45,17 @@ namespace NETMQWorker
                 }
             }
         }
+
+        internal static void RRBroker()
+        {
+            using (var context = new ZContext())
+            using (var frontend = new ZSocket(context, ZSocketType.ROUTER))
+            using (var backend = new ZSocket(context, ZSocketType.DEALER))
+            {
+                frontend.Bind("tcp://127.0.0.1:5554");
+                backend.Bind("tcp://127.0.0.1:5555");
+                ZContext.Proxy(frontend, backend);
+            }
+        }
     }
 }

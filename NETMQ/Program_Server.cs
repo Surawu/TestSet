@@ -10,7 +10,7 @@ namespace NETMQServer
 {
     public partial class Program
     {
-        internal static void Server_Rep(string port)
+        internal static void Server_Rep(string port = "5554")
         {
             Console.WriteLine("Server started");
             using (var context = new ZContext())
@@ -25,15 +25,16 @@ namespace NETMQServer
                         {
                             var message = item.ReadString();
                             Console.WriteLine("get message: " + message);
-                            Thread.Sleep(10);
+
                         }
                         responder.Send(new ZFrame("World " + port));
+                        Thread.Sleep(1000);
                     }
                 }
             }
         }
 
-        internal static void Server_Pub(string port)
+        internal static void Server_Pub(string port = "5554")
         {
             Console.WriteLine("Server started");
             using (var context = new ZContext())
@@ -54,7 +55,33 @@ namespace NETMQServer
             }
         }
 
-        public static void TaskVent()
+        internal static void Push_Pub()
+        {
+            Console.WriteLine("Server started");
+            using (var context = new ZContext())
+            using (var pub = new ZSocket(context, ZSocketType.PUB))
+            using (var push = new ZSocket(context, ZSocketType.PUSH))
+            {
+                pub.Bind("tcp://127.0.0.1:5555");
+                push.Bind("tcp://127.0.0.1:5554");
+                var msg = new ZMessage()
+                {
+                    new ZFrame("10001 hello1 5554")
+                };
+                var msg1 = new ZMessage()
+                {
+                    new ZFrame("hello1 5555")
+                };
+                for (int i = 0; i < 100; i++)
+                {
+                    pub.Send(msg);
+                    push.Send(msg1);
+                    Thread.Sleep(50);
+                }
+            }
+        }
+
+        internal static void TaskVent()
         {
             //
             // Task ventilator
@@ -98,6 +125,65 @@ namespace NETMQServer
                 }
 
                 Console.WriteLine("Total expected cost: {0} ms", total_msec);
+            }
+        }
+
+        internal static void RRServer()
+        {
+            using (var context = new ZContext())
+            using (var respond = new ZSocket(context, ZSocketType.REP))
+            {
+                respond.Connect("tcp://127.0.0.1:5555");
+                var msg = new ZMessage()
+                    {
+                        new ZFrame("world ")
+                    };
+                while (true)
+                {
+                    foreach (var item in respond.ReceiveMessage())
+                    {
+                        Console.WriteLine(item.ReadString());
+                    }
+
+                    respond.Send(msg);
+                    Thread.Sleep(100);
+                }
+            }
+        }
+
+        internal static void MTServer()
+        {
+            using (var context = new ZContext())
+            using (var clients = new ZSocket(context, ZSocketType.ROUTER)) // 用于和client进行通信的套接字
+            using (var workers = new ZSocket(context, ZSocketType.DEALER)) // 用于和worker进行通信的套接字
+            {
+                clients.Bind("tcp://127.0.0.1:5554");
+                workers.Bind("inproc://workers");
+
+                for (int i = 0; i < 5; i++)
+                {
+                    Task.Factory.StartNew(() => { MTServer_Worker(context); });
+                }
+
+                ZContext.Proxy(clients, workers);
+            }
+        }
+
+        static void MTServer_Worker(ZContext context)
+        {
+            using (var server = new ZSocket(context, ZSocketType.REP))
+            {
+                server.Connect("inproc://workers");
+                while (true)
+                {
+                    var frame = server.ReceiveFrame();
+                    Console.Write("Received: {0}", frame.ReadString());
+
+                    Thread.Sleep(1);
+                    string replyText = "World";
+                    Console.WriteLine(", Sending: {0}", replyText);
+                    server.Send(new ZFrame(replyText));
+                }
             }
         }
     }

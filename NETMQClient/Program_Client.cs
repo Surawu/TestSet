@@ -17,7 +17,6 @@ namespace NETMQClient
             {
                 using (var requester = new ZSocket(context, ZSocketType.REQ))
                 {
-                    requester.Connect("tcp://127.0.0.1:5555");
                     requester.Connect("tcp://127.0.0.1:5554");
                     var msg = new ZMessage()
                     {
@@ -32,7 +31,6 @@ namespace NETMQClient
                         {
                             Console.WriteLine(item.ReadString());
                         }
-                        Thread.Sleep(1000);
                     }
                 }
             }
@@ -103,7 +101,52 @@ namespace NETMQClient
             }
         }
 
-        public static void TaskSink()
+        internal static void MSPoller()
+        {
+            using (var context = new ZContext())
+            using (var receiver = new ZSocket(context, ZSocketType.PULL))
+            using (var subscriber = new ZSocket(context, ZSocketType.SUB))
+            {
+                receiver.Connect("tcp://127.0.0.1:5554");
+                subscriber.Connect("tcp://127.0.0.1:5555");
+
+                subscriber.SetOption(ZSocketOption.SUBSCRIBE, "10001");
+                var sockets = new ZSocket[] { subscriber, receiver };
+                var polls = new ZPollItem[] { ZPollItem.CreateReceiver(), ZPollItem.CreateReceiver() };
+                ZError error;
+                ZMessage[] message;
+                while (true)
+                {
+                    if (sockets.PollIn(polls, out message, out error))
+                    {
+                        if (message[0] != null)
+                        {
+                            foreach (var item in message[0])
+                            {
+                                Console.WriteLine(item.ReadString());
+                            }
+                        }
+                        if (message[1] != null)
+                        {
+                            foreach (var item in message[1])
+                            {
+                                Console.WriteLine(item.ReadString());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (error == ZError.ETERM)
+                            return; // Interrupted
+                        if (error != ZError.EAGAIN)
+                            throw new ZException(error);
+                    }
+                }
+
+            }
+        }
+
+        internal static void TaskSink()
         {
             //
             // Task sink
@@ -140,6 +183,37 @@ namespace NETMQClient
                 // Calculate and report duration of batch
                 stopwatch.Stop();
                 Console.WriteLine("Total elapsed time: {0} ms", stopwatch.ElapsedMilliseconds);
+            }
+        }
+
+        internal static void RRClient()
+        {
+            using (var context = new ZContext())
+            using (var requester = new ZSocket(context, ZSocketType.REQ))
+            {
+                requester.Connect("tcp://127.0.0.1:5554");
+                var msg = new ZMessage()
+                    {
+                        new ZFrame("hello "+ AppDomain.GetCurrentThreadId().ToString() )
+                    };
+                while (true)
+                {
+                    requester.Send(msg);
+
+                    foreach (var item in requester.ReceiveMessage())
+                    {
+                        Console.WriteLine(item.ReadString());
+                    }
+                }
+            }
+        }
+
+        internal static void MTClient()
+        {
+            using (var context = new ZContext())
+            using (var requester = new ZSocket(context, ZSocketType.REQ))
+            {
+                requester.Connect("tcp://127.0.0.1:5554");
             }
         }
     }
