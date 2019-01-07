@@ -10,51 +10,27 @@ namespace NETMQWorker
 {
     public static partial class Program
     {
-        public static void TaskWork()
+        internal static void PipeLineBroker()
         {
-            //
-            // Task worker
-            // Connects PULL socket to tcp://127.0.0.1:5557
-            // Collects workloads from ventilator via that socket
-            // Connects PUSH socket to tcp://127.0.0.1:5558
-            // Sends results to sink via that socket
-            //
-            // Author: metadings
-            //
-
-            // Socket to receive messages on and
-            // Socket to send messages to
             using (var context = new ZContext())
-            using (var receiver = new ZSocket(context, ZSocketType.PULL))
-            using (var sink = new ZSocket(context, ZSocketType.PUSH))
+            using (var pullSocket = new ZSocket(context, ZSocketType.PULL))
+            using (var pushSocket = new ZSocket(context, ZSocketType.PUSH))
             {
-                receiver.Connect("tcp://127.0.0.1:5557");
-                sink.Connect("tcp://127.0.0.1:5558");
+                pullSocket.Connect("tcp://127.0.0.1:5554");
+                pushSocket.Connect("tcp://127.0.0.1:5555");
 
-                // Process tasks forever
                 while (true)
                 {
-                    var replyBytes = new byte[4];
-                    receiver.ReceiveBytes(replyBytes, 0, replyBytes.Length);
-                    int workload = BitConverter.ToInt32(replyBytes, 0);
-                    Console.WriteLine("{0}.", workload);    // Show progress
+                    var pullMsg = pullSocket.ReceiveMessage();
+                    var m = pullMsg[0].ReadString();
+                    Console.WriteLine(m);
 
-                    Thread.Sleep(workload); // Do the work
+                    Console.WriteLine("send " + m);
+                    pushSocket.Send(new ZFrame(m));
 
-                    sink.Send(new byte[0], 0, 0);   // Send results to sink
+                    Thread.Sleep(1000);
                 }
-            }
-        }
 
-        internal static void RRBroker()
-        {
-            using (var context = new ZContext())
-            using (var frontend = new ZSocket(context, ZSocketType.ROUTER))
-            using (var backend = new ZSocket(context, ZSocketType.DEALER))
-            {
-                frontend.Bind("tcp://127.0.0.1:5554");
-                backend.Bind("tcp://127.0.0.1:5555");
-                ZContext.Proxy(frontend, backend);
             }
         }
     }
