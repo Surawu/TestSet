@@ -11,7 +11,7 @@ namespace NETMQServer
         static void Main(string[] args)
         {
             Console.WriteLine("Enter in NETMQServer");
-            PipeLineVentilator();
+            Server_Pub();
             Console.ReadLine();
         }
     }

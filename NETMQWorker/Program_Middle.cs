@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ZeroMQ;
 
-namespace NETMQWorker
+namespace NETMQMiddle
 {
     public static partial class Program
     {
@@ -31,6 +31,19 @@ namespace NETMQWorker
                     Thread.Sleep(1000);
                 }
 
+            }
+        }
+
+        internal static void MServerMode()
+        {
+            using (var context = new ZContext())
+            using (var router = new ZSocket(context, ZSocketType.ROUTER))
+            using (var dealer = new ZSocket(context, ZSocketType.DEALER))
+            {
+                router.Bind("tcp://127.0.0.1:5554");
+                dealer.Bind("tcp://127.0.0.1:5555");
+
+                ZContext.Proxy(router, dealer);
             }
         }
     }

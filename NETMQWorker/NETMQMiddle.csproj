@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{813A956A-B900-4E2C-8828-C8D6FCF23570}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>NETMQWorker</RootNamespace>
-    <AssemblyName>NETMQWorker</AssemblyName>
+    <RootNamespace>NETMQMiddle</RootNamespace>
+    <AssemblyName>NETMQMiddle</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
-    <Compile Include="Program_Worker.cs" />
+    <Compile Include="Program_Middle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

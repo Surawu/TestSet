@@ -61,7 +61,7 @@ namespace NETMQClient
             }
         }
 
-        public static void PipeLineSink()
+        internal static void PipeLineSink()
         {
             using (var context = new ZContext())
             using (var sink = new ZSocket(context, ZSocketType.PULL))
@@ -71,6 +71,25 @@ namespace NETMQClient
                 while (true)
                 {
                     Console.WriteLine(sink.ReceiveMessage()[0]);
+                }
+            }
+        }
+
+        internal static void MClientMode()
+        {
+            bool flag = false;
+            using (var context = new ZContext())
+            using (var requester = new ZSocket(context, ZSocketType.REQ))
+            {
+                requester.Connect("tcp://127.0.0.1:5554");
+
+                while (true)
+                {
+                    flag = !flag;
+                    requester.Send(new ZFrame("Hello " + flag));
+
+                    var msg = requester.ReceiveMessage();
+                    Console.WriteLine(msg[0].ReadString());
                 }
             }
         }

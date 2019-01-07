@@ -40,9 +40,9 @@ namespace NETMQServer
 
             using (var context = new ZContext())
             {
-                using (var responder = new ZSocket(context, ZSocketType.PUB))
+                using (var publisher = new ZSocket(context, ZSocketType.PUB))
                 {
-                    responder.Bind("tcp://127.0.0.1:" + port);
+                    publisher.Bind("tcp://127.0.0.1:" + port);
                     var msg = new ZMessage()
                     {
                         new ZFrame("hello1" + port),
@@ -50,13 +50,13 @@ namespace NETMQServer
                     };
                     while (true)
                     {
-                        responder.Send(msg);
+                        publisher.Send(msg);
                     }
                 }
             }
         }
 
-        public static void PipeLineVentilator()
+        internal static void PipeLineVentilator()
         {
             using (var context = new ZContext())
             using (var ventilator = new ZSocket(context, ZSocketType.PUSH))
@@ -66,6 +66,23 @@ namespace NETMQServer
                 while (true)
                 {
                     ventilator.Send(new ZFrame("Hello " + context.ContextPtr.ToInt32()));
+                }
+            }
+        }
+
+        internal static void MServerMode()
+        {
+            using (var context = new ZContext())
+            using (var respondent = new ZSocket(context, ZSocketType.REP))
+            {
+                respondent.Connect("tcp://127.0.0.1:5555");
+
+                while (true)
+                {
+                    var msg = respondent.ReceiveMessage()[0].ReadString();
+                    Console.WriteLine(msg);
+
+                    respondent.Send(new ZFrame("Hello world"));
                 }
             }
         }
