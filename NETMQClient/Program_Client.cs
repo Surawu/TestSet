@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -40,13 +41,13 @@ namespace NETMQClient
         {
             using (var context = new ZContext())
             {
-                using (var requester = new ZSocket(context, ZSocketType.SUB))
+                using (var requester = new ZSocket(context, ZSocketType.SUB | ZSocketType.id))
                 {
                     // .Subscribe("hello1")will WriteLine hello1 and hello2, but if you Subscribe("hello2")
                     // will not WriteLine any message
                     requester.SubscribeAll(); // this is very important
 
-                    requester.Connect("tcp://127.0.0.1:5555");
+                    //requester.Connect("tcp://127.0.0.1:5555");
                     requester.Connect("tcp://127.0.0.1:5554");
                     while (true)
                     {
@@ -214,6 +215,105 @@ namespace NETMQClient
             using (var requester = new ZSocket(context, ZSocketType.REQ))
             {
                 requester.Connect("tcp://127.0.0.1:5554");
+            }
+        }
+
+        public static void MTRelay()
+        {
+            //
+            // Multithreaded relay
+            //
+            // Author: metadings
+            //
+
+            // Bind inproc socket before starting step2
+            using (var ctx = new ZContext())
+            using (var receiver = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                receiver.Bind("inproc://step3");
+
+                new Thread(() => MTRelay_step2(ctx)).Start();
+
+                // Wait for signal
+                receiver.ReceiveFrame();
+
+                Console.WriteLine("Test successful!");
+            }
+        }
+
+        private static void MTRelay_step2(ZContext ctx)
+        {
+            // Bind inproc socket before starting step1
+            using (var receiver = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                receiver.Bind("inproc://step2");
+
+                new Thread(() => MTRelay_step1(ctx)).Start();
+
+                // Wait for signal and pass it on
+                receiver.ReceiveFrame();
+            }
+
+            // Connect to step3 and tell it we're ready
+            using (var xmitter = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                xmitter.Connect("inproc://step3");
+
+                Console.WriteLine("Step 2 ready, signaling step 3");
+                xmitter.Send(new ZFrame("READY"));
+            }
+        }
+
+        static void MTRelay_step1(ZContext ctx)
+        {
+            // Connect to step2 and tell it we're ready
+            using (var xmitter = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                xmitter.Connect("inproc://step2");
+                Console.WriteLine("Step 1 ready, signaling step 2");
+                xmitter.Send(new ZFrame("READY"));
+            }
+        }
+
+
+        public static void PathoSub()
+        {
+            //
+            // Pathological subscriber
+            // Subscribes to one random topic and prints received messages
+            //
+            // Author: metadings
+            //
+
+            using (var context = new ZContext())
+            using (var subscriber = new ZSocket(context, ZSocketType.SUB))
+            {
+                subscriber.Connect("tcp://127.0.0.1:5556");
+
+                var rnd = new Random();
+                var subscription = string.Format("{0:D3}", rnd.Next(1000));
+                subscriber.Subscribe(subscription);
+                //subscriber.Subscribe("Sura"); 三帧消息
+
+                ZMessage msg;
+                ZError error;
+                while (true)
+                {
+                    if (null == (msg = subscriber.ReceiveMessage(out error)))
+                    {
+                        if (error == ZError.ETERM)
+                            break;  // Interrupted
+                        throw new ZException(error);
+                    }
+                    using (msg)
+                    {
+                        if (msg[0].ReadString() != subscription)
+                        {
+                            throw new InvalidOperationException();
+                        }
+                        Console.WriteLine(msg[1].ReadString());
+                    }
+                }
             }
         }
     }

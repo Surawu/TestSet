@@ -11,7 +11,7 @@ namespace NETMQClient
         static void Main(string[] args)
         {
             Console.WriteLine("Enter in NETMQClient");
-            RRClient();
+            Client_Sub();
             Console.ReadLine();
         }
     }

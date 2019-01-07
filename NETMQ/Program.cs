@@ -10,8 +10,7 @@ namespace NETMQServer
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("please enter port...");
-            MTServer();
+            Server_Pub();
             Console.ReadLine();
         }
     }

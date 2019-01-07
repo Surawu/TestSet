@@ -14,3 +14,4 @@
 			DEALER过去被称为XREQ，ROUTER被称为XREP
 * Add: ZMQ多线程编程: MTServer - MTClient
 	   请求-应答代理: RRServer - RRClient
+* Add：发布-订阅消息信封 PathoPub PathoSub

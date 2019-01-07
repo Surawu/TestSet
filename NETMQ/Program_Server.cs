@@ -37,6 +37,7 @@ namespace NETMQServer
         internal static void Server_Pub(string port = "5554")
         {
             Console.WriteLine("Server started");
+            
             using (var context = new ZContext())
             {
                 using (var responder = new ZSocket(context, ZSocketType.PUB))
@@ -183,6 +184,35 @@ namespace NETMQServer
                     string replyText = "World";
                     Console.WriteLine(", Sending: {0}", replyText);
                     server.Send(new ZFrame(replyText));
+                }
+            }
+        }
+
+        public static void PathoPub()
+        {
+            using (var context = new ZContext())
+            using (var publisher = new ZSocket(context, ZSocketType.PUB))
+            {
+                publisher.Bind("tcp://*:5556");
+                // Ensure subscriber connection has time to complete
+                Thread.Sleep(100);
+                Console.ReadLine();
+                // Send out all 1,000 topic messages
+                for (int topic = 0; topic < 1000; ++topic)
+                {
+                    publisher.SendMore(new ZFrame(string.Format("{0:D3}", topic)));
+                    //publisher.SendMore(new ZFrame("sura")); 三帧消息
+                    publisher.Send(new ZFrame("Save Roger"));
+                }
+                Console.WriteLine("------------");
+                Console.ReadLine();
+                // Send one random update per second
+                var rnd = new Random();
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    publisher.SendMore(new ZFrame(string.Format("{0:D3}", rnd.Next(1000))));
+                    publisher.Send(new ZFrame("Off with his head!"));
                 }
             }
         }
