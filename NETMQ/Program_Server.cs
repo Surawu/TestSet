@@ -86,5 +86,36 @@ namespace NETMQServer
                 }
             }
         }
+
+        const int SyncPub_SubscribersExpected = 3;	// We wait for 3 subscribers
+
+        internal static void SyncPub()
+        {
+            using (var context = new ZContext())
+            using (var pubSocket = new ZSocket(context, ZSocketType.PUB))
+            using (var repSocket = new ZSocket(context, ZSocketType.REP))
+            {
+                repSocket.Bind("tcp://127.0.0.1:5554");
+                pubSocket.Bind("tcp://127.0.0.1:5555");
+                //pubSocket.SendHighWatermark = 1100000; what's this??
+
+                int subscribers = SyncPub_SubscribersExpected;
+
+                do
+                {
+                    Console.WriteLine("Waiting for {0} subscriber" + (subscribers > 1 ? "s" : string.Empty) + "...", subscribers);
+                    repSocket.ReceiveFrame();
+                    repSocket.Send(new ZFrame());
+                } while (--subscribers > 0);
+
+                for (int i = 0; i < 20; i++)
+                {
+                    Console.WriteLine("Sending {0}...", i);
+                    pubSocket.Send(new ZFrame(i));
+                }
+                pubSocket.Send(new ZFrame("End"));
+
+            }
+        }
     }
 }

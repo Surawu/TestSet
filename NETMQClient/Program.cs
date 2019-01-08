@@ -12,7 +12,7 @@ namespace NETMQClient
         static void Main(string[] args)
         {
             Console.WriteLine("Enter in NETMQClient");
-            MClientMode();
+            SyncSub();
             Console.ReadLine();
         }
        

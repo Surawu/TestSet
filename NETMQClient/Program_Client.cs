@@ -93,5 +93,37 @@ namespace NETMQClient
                 }
             }
         }
+
+        internal static void SyncSub()
+        {
+            using (var context = new ZContext())
+            using (var subSocket = new ZSocket(context, ZSocketType.SUB))
+            using (var reqSocket = new ZSocket(context, ZSocketType.REQ))
+            {
+                subSocket.Connect("tcp://127.0.0.1:5555");
+                subSocket.SubscribeAll();
+                reqSocket.Connect("tcp://127.0.0.1:5554");
+                reqSocket.Send(new ZFrame());
+                reqSocket.ReceiveFrame();
+
+                int i = 0;
+                while (true)
+                {
+                    using (var frame = subSocket.ReceiveFrame())
+                    {
+                        var str = frame.ReadString();
+                        if (str.Equals("End"))
+                        {
+                            break;
+                        }
+
+                        Console.WriteLine("Receiving {0}....", frame.ReadInt32());
+                        i++;
+                    }
+                }
+
+                Console.WriteLine("Receiving {0} messages", i.ToString());
+            }
+        }
     }
 }
