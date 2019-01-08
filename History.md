@@ -5,3 +5,4 @@
 * Add(): 简单状态机
 * Add(): ZMQ PipeLine 模型: PipeLineVentilator, PipeLineSink, PipeLineBroker；应用场景并行处理大数据
 * Add(): ZMQ 多个服务器: MClientMode, MServerMode, MServerMode,可开启多个服务器；应用场景代理与反代理
+* Add(): ZMQ 线程间的信号传输：MTRelay

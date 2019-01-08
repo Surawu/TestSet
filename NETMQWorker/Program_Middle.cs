@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,6 +45,52 @@ namespace NETMQMiddle
                 dealer.Bind("tcp://127.0.0.1:5555");
 
                 ZContext.Proxy(router, dealer);
+            }
+        }
+
+        internal static void MTRelay()
+        {
+            using (var ctx = new ZContext())
+            using (var receiver = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                //ConcurrentDictionary
+                receiver.Bind("inproc://step3");
+                Task.Factory.StartNew(() =>
+                {
+                    MTRelat_Step2(ctx);
+                });
+                receiver.ReceiveFrame();
+                Console.WriteLine("Test successful!");
+            }
+        }
+
+        static void MTRelat_Step2(ZContext ctx)
+        {
+            using (var receiver = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                receiver.Bind("inproc://step2");
+                Task.Factory.StartNew(() =>
+                {
+                    MTRelat_Step1(ctx);
+                });
+                receiver.ReceiveFrame();
+            }
+
+            using (var sign = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                sign.Connect("inproc://step3");
+                Console.WriteLine("Step 2 ready, signaling step 3");
+                sign.Send(new ZFrame("Ready"));
+            }
+        }
+
+        static void MTRelat_Step1(ZContext ctx)
+        {
+            using (var sign = new ZSocket(ctx, ZSocketType.PAIR))
+            {
+                sign.Connect("inproc://step2");
+                Console.WriteLine("Step1 ready, siganl step 2");
+                sign.Send(new ZFrame("Ready"));
             }
         }
     }

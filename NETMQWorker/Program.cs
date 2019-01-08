@@ -11,7 +11,7 @@ namespace NETMQMiddle
         static void Main(string[] args)
         {
             Console.WriteLine("Enter in NETMQMiddle");
-            MServerMode();
+            MTRelay();
             Console.ReadLine();
         }
     }
