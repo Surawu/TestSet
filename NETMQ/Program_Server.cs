@@ -34,7 +34,7 @@ namespace NETMQServer
             }
         }
 
-        internal static void Server_Pub(string port = "5554")
+        internal static void Server_Pub()
         {
             Console.WriteLine("Server started");
 
@@ -42,15 +42,11 @@ namespace NETMQServer
             {
                 using (var publisher = new ZSocket(context, ZSocketType.PUB))
                 {
-                    publisher.Bind("tcp://127.0.0.1:" + port);
-                    var msg = new ZMessage()
-                    {
-                        new ZFrame("hello1" + port),
-                        new ZFrame("hello2" + port)
-                    };
+                    publisher.Bind("tcp://127.0.0.1:5554");
                     while (true)
                     {
-                        publisher.Send(msg);
+                        Console.WriteLine("Sending Hello....");
+                        publisher.Send(new ZFrame("Hello"));
                     }
                 }
             }
@@ -115,6 +111,43 @@ namespace NETMQServer
                 }
                 pubSocket.Send(new ZFrame("End"));
 
+            }
+        }
+
+        internal static void MTServer()
+        {
+            int a = 0;
+            using (var context = new ZContext())
+            using (var clients = new ZSocket(context, ZSocketType.ROUTER))
+            using (var workers = new ZSocket(context, ZSocketType.DEALER))
+            {
+                clients.Bind("tcp://127.0.0.1:5554");
+                workers.Bind("inproc://worker");
+
+                for (int i = 0; i < 5; i++)
+                {
+                    Task.Factory.StartNew((ctx) =>
+                    {
+                        using (var server = new ZSocket(context, ZSocketType.REP))
+                        {
+                            server.Connect("inproc://worker");
+                            using (var frame = server.ReceiveFrame())
+                            {
+                                var n = frame.ReadInt32();
+                                Console.Write("Received: {0}", n);
+                                // Do some 'work'
+                                //Thread.Sleep(1);
+                                a += n;
+
+                                // Send reply back to client
+                                Console.WriteLine("Sending {0}...", a);
+                                server.Send(new ZFrame(a));
+                            }
+                        }
+                    }, context);
+                }
+
+                ZContext.Proxy(clients, workers);
             }
         }
     }

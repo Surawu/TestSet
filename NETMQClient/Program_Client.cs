@@ -43,19 +43,13 @@ namespace NETMQClient
             {
                 using (var requester = new ZSocket(context, ZSocketType.SUB))
                 {
-                    // .Subscribe("hello1")will WriteLine hello1 and hello2, but if you Subscribe("hello2")
-                    // will not WriteLine any message
-                    requester.SubscribeAll(); // this is very important
+                    requester.Subscribe("Hello"); // this is very important
 
-                    //requester.Connect("tcp://127.0.0.1:5555");
                     requester.Connect("tcp://127.0.0.1:5554");
                     while (true)
                     {
-                        var reps = requester.ReceiveMessage();
-                        foreach (var item in reps)
-                        {
-                            Console.WriteLine(item.ReadString());
-                        }
+                        var msg = requester.ReceiveFrame();
+                        Console.WriteLine("Received: " + msg.ReadString());
                     }
                 }
             }
@@ -123,6 +117,25 @@ namespace NETMQClient
                 }
 
                 Console.WriteLine("Receiving {0} messages", i.ToString());
+            }
+        }
+
+        internal static void MTClient()
+        {
+            using (var context = new ZContext())
+            using (var req = new ZSocket(context, ZSocketType.REQ))
+            {
+                req.Connect("tcp://127.0.0.1:5554");
+
+                while (true)
+                {
+                    req.SendFrame(new ZFrame(10));
+
+                    using (var frame = req.ReceiveFrame())
+                    {
+                        Console.WriteLine(frame.ReadInt32());
+                    }
+                }
             }
         }
     }

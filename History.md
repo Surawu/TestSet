@@ -8,3 +8,4 @@
 * Add(): ZMQ 线程间的信号传输：MTRelay
 * Add(): ZMQ 节点协调：SyncSub, SyncPub;发布者启动后会先等待所有订阅者进行连接，也就是节点协调。
 			每个订阅者会使用另一个套接字来告知发布者自己已就绪
+* Add(): ZMQ 多线程处理大量请求： MTServer，MTClient
